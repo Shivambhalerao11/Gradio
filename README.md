@@ -1,118 +1,93 @@
 # 🤖 Slack Bot Studio — Gradio AI Dashboard
 
-A production-grade developer dashboard built with **Gradio 6** to connect Slack workspaces with Python AI / ML applications.
+A **production-grade** developer dashboard built with **Gradio 6** following a clean **Frontend / Backend** architecture.
 
-![Theme](https://img.shields.io/badge/Theme-Modern%20Dark%20Mode-1e293b?style=flat-square)
-![Framework](https://img.shields.io/badge/Framework-Gradio%206.x-6366F1?style=flat-square)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3b82f6?style=flat-square)
-![Design](https://img.shields.io/badge/Design-Glassmorphism-8b5cf6?style=flat-square)
+![Gradio](https://img.shields.io/badge/Gradio-6.x-6366F1?style=flat-square)
+![Architecture](https://img.shields.io/badge/Architecture-Frontend%2FBackend-10b981?style=flat-square)
+![Theme](https://img.shields.io/badge/Theme-Dark%20Glassmorphism-1e293b?style=flat-square)
+
+---
+
+## Architecture Overview
+
+```
+app.py                      ← Entry point only (bootstrap + launch)
+│
+├── frontend/               ← UI layer — NO business logic
+│   ├── ui.py               ← Assembles demo, wires all event bindings
+│   ├── layout.py           ← Declares every gr.* component and layout
+│   ├── components.py       ← Reusable HTML fragment factories
+│   ├── styles.py           ← All CSS + JavaScript (CUSTOM_CSS, LOG_AUTOSCROLL_JS)
+│   ├── themes.py           ← Gradio theme definition (DARK_THEME)
+│   └── assets/
+│       ├── images/         ← Sample images + runtime uploads
+│       ├── icons/          ← Bot/user avatars + Slack SVG
+│       ├── css/            ← (reserved for external CSS files)
+│       └── js/             ← (reserved for external JS files)
+│
+├── backend/                ← Logic layer — NO Gradio component construction
+│   ├── config.py           ← All constants + env-var driven settings
+│   ├── handlers.py         ← Gradio event handler functions (thin wrappers)
+│   ├── services.py         ← Business logic (connect, disconnect, reply gen)
+│   ├── state.py            ← Reactive HTML builders (badge, status card, stats)
+│   ├── logger.py           ← Log entry HTML builder + initial log factory
+│   ├── chatbot.py          ← Initial demo chat history factory
+│   ├── models.py           ← Typed dataclasses (AppState, ChatMessage, …)
+│   └── validation.py       ← Input validation (tokens, message content)
+│
+├── utils/                  ← Shared utilities — no Gradio, no business logic
+│   ├── constants.py        ← App-wide constants (formats, limits)
+│   ├── file_utils.py       ← Directory bootstrap + image persistence
+│   ├── image_utils.py      ← PIL image generators (cat, bot/user avatars, SVG)
+│   └── helpers.py          ← Miscellaneous helpers (avatar path resolution)
+│
+├── data/                   ← Runtime data directory (gitignored except .gitkeep)
+├── create_assets.py        ← One-time asset generator script
+├── requirements.txt
+├── .env.example
+├── .gitignore
+└── README.md
+```
+
+---
+
+## Separation of Concerns
+
+| Layer | Allowed | Forbidden |
+|---|---|---|
+| `frontend/` | `gr.*` components, HTML strings, CSS, JS, layout | Business logic, API calls, file I/O |
+| `backend/` | Logic, validation, state HTML strings | `gr.*` imports, UI construction |
+| `utils/` | File helpers, image generators, constants | Gradio, backend services |
+| `app.py` | Bootstrap, import, `demo.launch()` | Layout, logic, styling |
 
 ---
 
 ## Features
 
-**Header**
-- Title, subtitle, and a dynamic live status badge (`● Connected` / `● Disconnected`) with pulse animation.
-
-**Left Panel — Slack Configuration**
-- Bot Token and App Token fields (password-masked).
-- Workspace Name and Channel inputs.
-- Connect / Disconnect buttons with full log feedback.
-- Interactive status card showing active Socket Listener state and bot identity.
-
-**Center Panel — Slack Chat Interface**
-- Full chat bubble UI with custom user and bot avatars.
-- Supports Markdown, code blocks with syntax highlighting, and image attachments.
-- Pre-loaded with realistic Slack bot interactions.
-- Image upload via collapsible accordion drawer.
-- Send via button click or Enter key.
-- Clear Chat button.
-
-**Right Panel — Live Event Logs**
-- Real-time scrollable terminal with timestamps and color-coded category badges:
-  `[CONNECT]` `[API]` `[SUCCESS]` `[EVENT]` `[ERROR]`
-- Auto-scrolls to latest entry on every update.
-- Clear Logs button.
-
-**Bottom Stats Cards**
-- 💬 Messages Processed — increments live as messages are sent
-- 👥 Connected Users
-- ⚡ API Latency
-- 📁 Uploads — increments live as images are uploaded
-
----
-
-## Design System
-
-| Token | Value |
-|---|---|
-| Background | `#0B1020` |
-| Card surface | `#141B2D` with `backdrop-filter: blur(16px)` |
-| Primary accent | `#4F8BFF` |
-| Secondary accent | `#6C5CE7` |
-| Success | `#2ECC71` |
-| Error | `#FF5E57` |
-| Border radius | `20px` |
-| Typography | Inter / system-ui |
-| Monospace | JetBrains Mono / Fira Code |
+- **Header** — Title + live animated status badge (Connected / Disconnected)
+- **Left Panel** — Slack Configuration (tokens, workspace, channel, connect/disconnect)
+- **Center Panel** — Full Slack-style chat with Markdown, code blocks, image uploads
+- **Right Panel** — Live Event Log terminal with colour-coded badges and auto-scroll
+- **Stats Bar** — Four live metric cards (Messages, Users, Latency, Uploads)
 
 ---
 
 ## Quick Start
 
-### 1. Install dependencies
-
 ```bash
+# 1. Install dependencies
 pip install -r requirements.txt
-```
 
-### 2. Configure secrets (optional)
-
-```bash
+# 2. Configure secrets (optional)
 cp .env.example .env
-# Edit .env and fill in your real Slack tokens
-```
+# Edit .env with your real Slack tokens
 
-> If `.env` is absent the app starts normally with empty token fields — suitable for demo / development.
-
-### 3. Generate assets
-
-```bash
-python create_assets.py
-```
-
-Assets are also auto-generated on first launch if missing.
-
-### 4. Run
-
-```bash
+# 3. Run
 python app.py
 ```
 
-Open **http://localhost:7860** in your browser.
-
----
-
-## Project Structure
-
-```
-Gardio/
-│
-├── app.py              # Entry point — Gradio Blocks layout & event bindings
-├── callbacks.py        # All event handler functions (pure Python, testable)
-├── config.py           # Constants & environment-variable-driven configuration
-├── theme.py            # Gradio theme, CSS, and JS
-├── utils.py            # Shared helpers: log builder, image saver, stat HTML
-├── create_assets.py    # One-time asset generator (avatars, cat image, SVG)
-│
-├── assets/             # Sample and uploaded images
-├── icons/              # Bot avatar, user avatar, Slack SVG
-│
-├── requirements.txt    # Pinned Python dependencies
-├── .env.example        # Environment variable template
-├── .gitignore          # Excludes .env and runtime uploads
-└── README.md
-```
+Open **http://localhost:7860**
 
 ---
 
@@ -120,18 +95,17 @@ Gardio/
 
 | Variable | Default | Description |
 |---|---|---|
-| `SLACK_BOT_TOKEN` | _(empty)_ | Your Slack bot token (`xoxb-...`) |
-| `SLACK_APP_TOKEN` | _(empty)_ | Your Slack app token (`xapp-...`) |
-| `SLACK_WORKSPACE` | `ai-workplace` | Display name of your workspace |
-| `SLACK_CHANNEL` | `#ai-test` | Default channel to monitor |
+| `SLACK_BOT_TOKEN` | _(empty)_ | Slack bot token (`xoxb-…`) |
+| `SLACK_APP_TOKEN` | _(empty)_ | Slack app token (`xapp-…`) |
+| `SLACK_WORKSPACE` | `ai-workplace` | Workspace display name |
+| `SLACK_CHANNEL` | `#ai-test` | Default channel |
 | `APP_HOST` | `0.0.0.0` | Server bind address |
 | `APP_PORT` | `7860` | Server port |
-| `APP_SHARE` | `false` | Set `true` to generate a public Gradio share link |
+| `APP_SHARE` | `false` | Gradio public share link |
 
 ---
 
 ## Known Limitations
 
-- The Slack connection is **simulated** — no real WebSocket or Slack API calls are made. This is an interactive UI demo. To add real Slack integration, use the `slack_bolt` and `slack_sdk` packages and wire them into `callbacks.py`.
-- File content in the chat (uploaded images) is displayed using the Gradio `{"path": "..."}` format. In a production deployment behind a reverse proxy, ensure the `assets/` directory is served or file paths are absolute.
-- The "Connected Users" and "API Latency" stat cards are static demo values.
+- Slack connection is **simulated** — no real `slack_bolt` WebSocket. Wire `backend/services.py` to `slack_bolt` for production use.
+- "Connected Users" and "API Latency" cards display static demo values.

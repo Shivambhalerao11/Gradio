@@ -1,7 +1,7 @@
-# Secrets — never commit
+# ── Secrets ────────────────────────────────────────────────────
 .env
 
-# Python
+# ── Python ─────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *.pyo
@@ -13,10 +13,18 @@ build/
 venv/
 env/
 
-# Uploaded assets (runtime-generated)
-assets/upload_*.jpg
-assets/upload_*.png
+# ── Runtime-generated uploads ──────────────────────────────────
+frontend/assets/images/upload_*.jpg
+frontend/assets/images/upload_*.png
 
-# OS
+# ── Legacy directories (kept for reference, not committed) ─────
+assets/
+icons/
+
+# ── Data directory placeholder ─────────────────────────────────
+data/*
+!data/.gitkeep
+
+# ── OS ─────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
