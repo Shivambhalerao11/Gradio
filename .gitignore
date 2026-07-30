@@ -1,0 +1,22 @@
+# Secrets — never commit
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Uploaded assets (runtime-generated)
+assets/upload_*.jpg
+assets/upload_*.png
+
+# OS
+.DS_Store
+Thumbs.db
